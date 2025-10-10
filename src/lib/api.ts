@@ -1,7 +1,7 @@
 import { LoginResponse, Projeto } from "./types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-const API_LOGIN = import.meta.env.API_LOGIN || "http://localhost:8000/api/login";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -34,9 +34,9 @@ export const api = {
     const response = await fetch(`${API_LOGIN}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telefone, senha }),
+      body: JSON.stringify({ phone_number: telefone, password: senha }),
     });
-    return handleResponse<LoginResponse>(response);
+    return handleResponse<LoginResponse>(response);;
   },
 
   async getProjetos(): Promise<Projeto[]> {

@@ -2,11 +2,16 @@ export interface User {
   id: string;
   nome: string;
   telefone: string;
+  phone_number: string;
+}
+export interface Payload {
+  phone_number: string;
 }
 
 export interface LoginResponse {
   access_token: string;
-  user: User;
+  payload: Payload;
+  ok: boolean;
 }
 
 export interface ChecklistItem {

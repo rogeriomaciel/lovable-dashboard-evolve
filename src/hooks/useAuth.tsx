@@ -35,14 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (telefone: string, senha: string) => {
     try {
-      const response = await api.login(telefone, senha);
+      const respLogin = await api.login(telefone, senha);
+      const response = respLogin[0];
+      console.log({responseLogin: response});
       localStorage.setItem("access_token", response.access_token);
       localStorage.setItem("user", JSON.stringify(response.user));
       setUser(response.user);
       navigate("/");
       toast({
         title: "Login realizado com sucesso",
-        description: `Bem-vindo(a), ${response.user.nome}!`,
+        description: `Bem-vindo(a), fulano de teste`,
       });
     } catch (error: any) {
       toast({
