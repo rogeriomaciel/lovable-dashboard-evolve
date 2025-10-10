@@ -1,6 +1,7 @@
 import { LoginResponse, Projeto } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_LOGIN = import.meta.env.API_LOGIN || "http://localhost:8000/api/login";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -30,7 +31,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export const api = {
   async login(telefone: string, senha: string): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${API_LOGIN}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telefone, senha }),
@@ -39,14 +40,14 @@ export const api = {
   },
 
   async getProjetos(): Promise<Projeto[]> {
-    const response = await fetch(`${API_BASE_URL}/projetos`, {
+    const response = await fetch(`${API_BASE_URL}/:projetos`, {
       headers: getAuthHeaders(),
     });
     return handleResponse<Projeto[]>(response);
   },
 
   async getProjeto(id: string): Promise<Projeto> {
-    const response = await fetch(`${API_BASE_URL}/projetos/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/:projetos/${id}`, {
       headers: getAuthHeaders(),
     });
     return handleResponse<Projeto>(response);
@@ -56,7 +57,7 @@ export const api = {
     iniciativaId: string,
     checklistData: any
   ): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/iniciativas/${iniciativaId}/checklist`, {
+    const response = await fetch(`${API_BASE_URL}/:iniciativas/${iniciativaId}/checklist`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ checklist_data: checklistData }),
