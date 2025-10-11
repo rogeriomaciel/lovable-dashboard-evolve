@@ -10,6 +10,12 @@ export class ApiError extends Error {
   }
 }
 
+let onUnauthorized: (() => void) | null = null;
+
+export const setupInterceptors = (logout: () => void) => {
+  onUnauthorized = logout;
+};
+
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem("access_token");
   return {
@@ -18,8 +24,16 @@ function getAuthHeaders(): HeadersInit {
   };
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
+async function customFetch<T>(url: string, options: RequestInit): Promise<T> {
+  const response = await fetch(url, options);
+
   if (!response.ok) {
+    if ((response.status === 401 || response.status === 403) && onUnauthorized) {
+      if (window.location.pathname !== '/login') {
+        onUnauthorized();
+      }
+    }
+
     const errorData = await response.json().catch(() => ({}));
     throw new ApiError(
       response.status,
@@ -36,32 +50,37 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone_number: telefone, password: senha }),
     });
-    return handleResponse<LoginResponse>(response);;
+    // O login não usa o customFetch para não causar loop de logout em caso de senha errada (401)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(
+        response.status,
+        errorData.detail || errorData.message || "Erro ao processar requisição"
+      );
+    }
+    return response.json();
   },
 
   async getProjetos(): Promise<Projeto[]> {
-    const response = await fetch(`${API_BASE_URL}/:projetos`, {
+    return customFetch<Projeto[]>(`${API_BASE_URL}/:projetos`, {
       headers: getAuthHeaders(),
     });
-    return handleResponse<Projeto[]>(response);
   },
 
   async getProjeto(id: string): Promise<Projeto> {
-    const response = await fetch(`${API_BASE_URL}/:projetos/${id}`, {
+    return customFetch<Projeto>(`${API_BASE_URL}/:projetos/${id}`, {
       headers: getAuthHeaders(),
     });
-    return handleResponse<Projeto>(response);
   },
 
   async updateIniciativaChecklist(
     iniciativaId: string,
     checklistData: any
   ): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/:iniciativas/${iniciativaId}/checklist`, {
+    return customFetch<void>(`${API_BASE_URL}/:iniciativas/${iniciativaId}/checklist`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ checklist_data: checklistData }),
     });
-    return handleResponse<void>(response);
   },
 };

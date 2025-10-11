@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/lib/types";
-import { api } from "@/lib/api";
+import { api, setupInterceptors } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -11,12 +11,24 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+    toast({
+      title: "Sessão expirada",
+      description: "Por favor, faça login novamente.",
+    });
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -31,6 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     setIsLoading(false);
+
+    // Configura o interceptor da API para deslogar em caso de erro 401
+    setupInterceptors(logout);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (telefone: string, senha: string) => {
@@ -54,17 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       throw error;
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login");
-    toast({
-      title: "Logout realizado",
-      description: "Até logo!",
-    });
   };
 
   return (
