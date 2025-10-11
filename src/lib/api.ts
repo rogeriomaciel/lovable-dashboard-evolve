@@ -1,4 +1,4 @@
-import { LoginResponse, Projeto } from "./types";
+import { LoginResponse, Projeto, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
@@ -82,5 +82,33 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ checklist_data: checklistData }),
     });
+  },
+
+  async loginWithGoogle(googleToken: string): Promise<LoginResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ google_token: googleToken }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(
+        response.status,
+        errorData.error || errorData.message || "Erro ao fazer login com Google"
+      );
+    }
+    return response.json();
+  },
+
+  async linkPhone(phoneNumber: string): Promise<{ ok: boolean; user: User; error?: string }> {
+    return customFetch<{ ok: boolean; user: User; error?: string }>(
+      `${API_BASE_URL}/auth/link-phone`,
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ phone_number: phoneNumber }),
+      }
+    );
   },
 };

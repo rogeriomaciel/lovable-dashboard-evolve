@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import ProjectDetails from "./pages/ProjectDetails";
 import Celebration from "./pages/Celebration";
 import NotFound from "./pages/NotFound";
+import LinkPhone from "./pages/LinkPhone";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/link-phone" element={<LinkPhone />} />
             <Route
               path="/"
               element={

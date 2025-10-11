@@ -1,8 +1,10 @@
 export interface User {
   id: string;
   nome: string;
-  telefone: string;
-  phone_number: string;
+  telefone: string | null;
+  phone_number: string | null;
+  email?: string;
+  auth_provider?: "phone" | "google";
 }
 export interface Payload {
   phone_number: string;
@@ -10,7 +12,9 @@ export interface Payload {
 
 export interface LoginResponse {
   access_token: string;
-  payload: Payload;
+  payload?: Payload;
+  user?: User;
+  needs_phone?: boolean;
   ok: boolean;
 }
 
