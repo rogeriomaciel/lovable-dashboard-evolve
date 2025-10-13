@@ -114,4 +114,15 @@ export const api = {
       }
     );
   },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return customFetch<{ message: string }>(
+      `${API_BASE_URL}/change-password`,
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      }
+    );
+  },
 };

@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut } from "lucide-react";
+import { LogOut, KeyRound } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function Header() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const getInitials = (name: string) => {
     return name
@@ -47,6 +49,10 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/redefinir-senha")} className="cursor-pointer">
+                <KeyRound className="mr-2 h-4 w-4" />
+                Redefinir Senha
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={logout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair

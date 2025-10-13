@@ -11,6 +11,7 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Celebration from "./pages/Celebration";
 import NotFound from "./pages/NotFound";
 import LinkPhone from "./pages/LinkPhone";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Celebration />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/redefinir-senha"
+              element={
+                <ProtectedRoute>
+                  <ResetPassword />
                 </ProtectedRoute>
               }
             />
