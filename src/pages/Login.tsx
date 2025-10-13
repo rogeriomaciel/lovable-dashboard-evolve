@@ -21,7 +21,9 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(telefone, senha);
+      // Remove formatação e adiciona +55
+      const telefoneNumerico = "55" + telefone.replace(/\D/g, "");
+      await login(telefoneNumerico, senha);
     } finally {
       setIsLoading(false);
     }
