@@ -61,8 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("access_token", response.access_token);
       
       const userData = {
-        id: "",
-        nome: "",
+        id: response.payload.id,
+        name: response.payload.name,
         telefone: response.payload.phone_number,
         phone_number: response.payload.phone_number,
       };
@@ -123,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await api.linkPhone(phoneNumber);
       
       if (response.ok) {
+        localStorage.setItem("access_token", response.access_token);
         localStorage.setItem("user", JSON.stringify(response.user));
         setUser(response.user);
         setNeedsPhone(false);

@@ -54,7 +54,7 @@ export default function LinkPhone() {
             <Phone className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">
-            Bem-vindo, {user.nome}!
+            Bem-vindo, {user.name}!
           </CardTitle>
           <CardDescription>
             Para completar seu cadastro e acessar o sistema, por favor informe seu número de telefone

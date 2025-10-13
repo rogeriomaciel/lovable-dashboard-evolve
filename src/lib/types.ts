@@ -1,12 +1,15 @@
 export interface User {
   id: string;
-  nome: string;
+  name: string;
   telefone: string | null;
   phone_number: string | null;
   email?: string;
   auth_provider?: "phone" | "google";
 }
 export interface Payload {
+  name: string;
+  email: string;
+  id: string;
   phone_number: string;
 }
 

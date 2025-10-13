@@ -2,6 +2,9 @@ import { LoginResponse, Projeto, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
+const API_LOGIN_AUTH_GOOGLE = import.meta.env.VITE_API_LOGIN_AUTH_GOOGLE || "http://localhost:8000/api/login";
+const API_LOGIN_LINK_PHONE = import.meta.env.VITE_API_LOGIN_LINK_PHONE || "http://localhost:8000/api/login";
+
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -85,7 +88,7 @@ export const api = {
   },
 
   async loginWithGoogle(googleToken: string): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+    const response = await fetch(`${API_LOGIN_AUTH_GOOGLE}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ google_token: googleToken }),
@@ -103,7 +106,7 @@ export const api = {
 
   async linkPhone(phoneNumber: string): Promise<{ ok: boolean; user: User; error?: string }> {
     return customFetch<{ ok: boolean; user: User; error?: string }>(
-      `${API_BASE_URL}/auth/link-phone`,
+      `${API_LOGIN_LINK_PHONE}`,
       {
         method: "POST",
         headers: getAuthHeaders(),
