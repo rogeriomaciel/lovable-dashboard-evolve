@@ -27,6 +27,23 @@ export default function Login() {
     }
   };
 
+  // Máscara de telefone
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 11) {
+      if (value.length <= 2) {
+        value = value.replace(/(\d{0,2})/, "($1");
+      } else if (value.length <= 6) {
+        value = value.replace(/(\d{2})(\d{0,4})/, "($1) $2");
+      } else if (value.length <= 10) {
+        value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+      } else {
+        value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+      }
+    }
+    setTelefone(value);
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -45,9 +62,10 @@ export default function Login() {
                 type="tel"
                 placeholder="(00) 00000-0000"
                 value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
+                onChange={handlePhoneChange}
                 required
                 disabled={isLoading}
+                maxLength={15}
               />
             </div>
             <div className="space-y-2">
