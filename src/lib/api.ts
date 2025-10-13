@@ -104,8 +104,8 @@ export const api = {
     return response.json();
   },
 
-  async linkPhone(phoneNumber: string): Promise<{ ok: boolean; user: User; error?: string }> {
-    return customFetch<{ ok: boolean; user: User; error?: string }>(
+  async linkPhone(phoneNumber: string): Promise<{ ok: boolean; access_token: string; user: User; error?: string }> {
+    return customFetch<{ ok: boolean; access_token: string; user: User; error?: string }>(
       `${API_LOGIN_LINK_PHONE}`,
       {
         method: "POST",

@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         navigate("/");
         toast({
           title: "Login realizado com sucesso",
-          description: `Bem-vindo(a), ${response.user?.nome}`,
+          description: `Bem-vindo(a), ${response.user?.name}`,
         });
       }
     } catch (error: any) {
