@@ -1,4 +1,4 @@
-import { LoginResponse, Projeto, User } from "./types";
+import { Iniciativa, LoginResponse, Projeto, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
@@ -65,13 +65,19 @@ export const api = {
   },
 
   async getProjetos(): Promise<Projeto[]> {
-    return customFetch<Projeto[]>(`${API_BASE_URL}/:projetos`, {
+    return customFetch<Projeto[]>(`${API_BASE_URL}/projetos`, {
+      headers: getAuthHeaders(),
+    });
+  },
+
+  async getIniciativasFoco(): Promise<Iniciativa[]> {
+    return customFetch<Iniciativa[]>(`${API_BASE_URL}/iniciativas/foco`, {
       headers: getAuthHeaders(),
     });
   },
 
   async getProjeto(id: string): Promise<Projeto> {
-    return customFetch<Projeto>(`${API_BASE_URL}/:projetos/${id}`, {
+    return customFetch<Projeto>(`${API_BASE_URL}/projetos/${id}`, {
       headers: getAuthHeaders(),
     });
   },
@@ -80,7 +86,7 @@ export const api = {
     iniciativaId: string,
     checklistData: any
   ): Promise<void> {
-    return customFetch<void>(`${API_BASE_URL}/:iniciativas/${iniciativaId}/checklist`, {
+    return customFetch<void>(`${API_BASE_URL}/iniciativas/${iniciativaId}/checklist`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify({ checklist_data: checklistData }),

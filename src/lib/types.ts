@@ -1,7 +1,6 @@
 export interface User {
   id: string;
   name: string;
-  telefone: string | null;
   phone_number: string | null;
   email?: string;
   auth_provider?: "phone" | "google";
@@ -33,12 +32,13 @@ export interface ChecklistData {
 
 export interface Iniciativa {
   id: string;
-  nome: string;
+  iniciativa_nome: string;
   descricao?: string;
-  status: "A Fazer" | "Em Andamento" | "Concluído";
   checklist_data?: ChecklistData;
   projeto_id: string;
   sprint_id?: string;
+  nome_projeto?: string; // Adicionado para o card de foco
+  status: "A Fazer" | "Em Andamento" | "Concluído" | "Bloqueado";
 }
 
 export interface Sprint {

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User } from "@/lib/types";
+import { LoginResponse, User } from "@/lib/types";
 import { api, setupInterceptors } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 interface AuthContextType {
@@ -20,13 +21,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [needsPhone, setNeedsPhone] = useState(false);
+  const navigate = useNavigate();
+
+  // Função auxiliar para centralizar o sucesso do login
+  const handleLoginSuccess = (response: LoginResponse, redirectTo = "/") => {
+    localStorage.setItem("access_token", response.access_token);
+    localStorage.setItem("user", JSON.stringify(response.user));
+    setUser(response.user || null);
+    setNeedsPhone(false);
+    navigate(redirectTo);
+  };
 
   const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     setUser(null);
     setNeedsPhone(false);
-    window.location.href = "/login";
+    navigate("/login");
+    // Adiciona um toast para feedback ao usuário
+    toast({
+      title: "Sessão encerrada",
+      description: "Até logo!",
+    });
   };
 
   useEffect(() => {
@@ -37,8 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
+        logout(); // Limpa a sessão se os dados do usuário estiverem corrompidos
       }
     }
     setIsLoading(false);
@@ -52,19 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (telefone: string, senha: string) => {
     try {
       const response = await api.login(telefone, senha);
-      localStorage.setItem("access_token", response.access_token);
-      
-      const userData = {
-        id: response.payload.id,
-        name: response.payload.name,
-        telefone: response.payload.phone_number,
-        phone_number: response.payload.phone_number,
-      };
-      
-      localStorage.setItem("user", JSON.stringify(userData));
-      setUser(userData);
-      setNeedsPhone(false);
-      window.location.href = "/";
+      handleLoginSuccess({ ...response, user: response.payload });
     } catch (error: any) {
       toast({
         title: "Erro ao fazer login",
@@ -77,26 +80,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = async (credential: string) => {
     try {
       const response = await api.loginWithGoogle(credential);
-      
-      localStorage.setItem("access_token", response.access_token);
-      
+
       if (response.needs_phone) {
+        localStorage.setItem("access_token", response.access_token);
         setNeedsPhone(true);
         setUser(response.user || null);
         toast({
           title: "Bem-vindo!",
           description: "Por favor, cadastre seu telefone para continuar.",
         });
-        window.location.href = "/link-phone";
+        navigate("/link-phone");
       } else {
-        localStorage.setItem("user", JSON.stringify(response.user));
-        setUser(response.user || null);
-        setNeedsPhone(false);
+        handleLoginSuccess(response);
         toast({
           title: "Login realizado com sucesso",
           description: `Bem-vindo(a), ${response.user?.name}`,
         });
-        window.location.href = "/";
       }
     } catch (error: any) {
       toast({
@@ -111,20 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const linkPhone = async (phoneNumber: string) => {
     try {
       const response = await api.linkPhone(phoneNumber);
-      
-      if (response.ok) {
-        localStorage.setItem("access_token", response.access_token);
-        localStorage.setItem("user", JSON.stringify(response.user));
-        setUser(response.user);
-        setNeedsPhone(false);
-        toast({
-          title: "Telefone cadastrado com sucesso!",
-          description: "Agora você pode acessar o sistema.",
-        });
-        window.location.href = "/";
-      } else {
-        throw new Error(response.error || "Erro ao cadastrar telefone");
-      }
+      handleLoginSuccess(response);
+      toast({
+        title: "Telefone cadastrado com sucesso!",
+        description: "Agora você pode acessar o sistema.",
+      });
     } catch (error: any) {
       toast({
         title: "Erro ao cadastrar telefone",
