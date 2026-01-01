@@ -84,7 +84,7 @@ export function InitiativeDetailsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">{iniciativa.nome}</DialogTitle>
+          <DialogTitle className="text-xl">{iniciativa.iniciativa_nome}</DialogTitle>
           <DialogDescription>
             {iniciativa.descricao || "Gerencie o checklist desta iniciativa"}
           </DialogDescription>
