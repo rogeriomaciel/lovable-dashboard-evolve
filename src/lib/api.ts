@@ -1,4 +1,4 @@
-import { Iniciativa, LoginResponse, Projeto, User } from "./types";
+import { DiarioEntry, Iniciativa, LoginResponse, Projeto, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
@@ -130,5 +130,12 @@ export const api = {
         body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
       }
     );
+  },
+
+  async getDiario(periodo?: string): Promise<DiarioEntry[]> {
+    const query = periodo ? `?periodo=${periodo}` : "";
+    return customFetch<DiarioEntry[]>(`${API_BASE_URL}/diario${query}`, {
+      headers: getAuthHeaders(),
+    });
   },
 };

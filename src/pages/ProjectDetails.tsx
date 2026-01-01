@@ -3,19 +3,21 @@ import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Projeto, Iniciativa } from "@/lib/types";
 import { Header } from "@/components/Header";
-import { SprintCard } from "@/components/SprintCard";
-import { InitiativeCard } from "@/components/InitiativeCard";
 import { InitiativeDetailsModal } from "@/components/InitiativeDetailsModal";
+import { ProjectOverview } from "@/components/project/ProjectOverview";
+import { SprintView } from "@/components/project/SprintView";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, PartyPopper } from "lucide-react";
+import { ArrowLeft, PartyPopper, LayoutGrid, PlayCircle } from "lucide-react";
 
 export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [selectedIniciativa, setSelectedIniciativa] = useState<Iniciativa | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const loadProjeto = async () => {
     if (!id) return;
@@ -76,18 +78,12 @@ export default function ProjectDetails() {
   }
 
   const sprintAtiva = projeto.sprints?.find((s) => s.status === "ativa");
-  const sprintsAnteriores = projeto.sprints?.filter((s) => s.status === "concluida") || [];
-  
-  const iniciativasPorStatus = {
-    "A Fazer": projeto.iniciativas?.filter((i) => i.status === "A Fazer") || [],
-    "Em Andamento": projeto.iniciativas?.filter((i) => i.status === "Em Andamento") || [],
-    "Concluído": projeto.iniciativas?.filter((i) => i.status === "Concluído") || [],
-  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container py-8">
+        {/* Navegação */}
         <div className="mb-6 flex items-center justify-between">
           <Link to="/">
             <Button variant="ghost" size="sm">
@@ -105,66 +101,43 @@ export default function ProjectDetails() {
           )}
         </div>
 
+        {/* Título do Projeto */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold">{projeto.nome_projeto}</h1>
-          <p className="text-muted-foreground">{projeto.descricao}</p>
         </div>
 
-        <section className="mb-8">
-          <h2 className="mb-4 text-2xl font-semibold">Sprints</h2>
-          <div className="space-y-4">
+        {/* Tabs de Visualização */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="overview" className="gap-2">
+              <LayoutGrid className="h-4 w-4" />
+              Visão Geral
+            </TabsTrigger>
             {sprintAtiva && (
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-muted-foreground">
-                  Sprint Ativa
-                </h3>
-                <SprintCard sprint={sprintAtiva} isActive />
-              </div>
+              <TabsTrigger value="sprint" className="gap-2">
+                <PlayCircle className="h-4 w-4" />
+                Sprint Atual
+              </TabsTrigger>
             )}
-            {sprintsAnteriores.length > 0 && (
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-muted-foreground">
-                  Sprints Anteriores
-                </h3>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {sprintsAnteriores.map((sprint) => (
-                    <SprintCard key={sprint.id} sprint={sprint} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+          </TabsList>
 
-        <section>
-          <h2 className="mb-4 text-2xl font-semibold">Quadro Kanban</h2>
-          <div className="grid gap-6 lg:grid-cols-3">
-            {Object.entries(iniciativasPorStatus).map(([status, iniciativas]) => (
-              <div key={status} className="space-y-3">
-                <div className="flex items-center justify-between rounded-lg bg-card p-3">
-                  <h3 className="font-semibold">{status}</h3>
-                  <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                    {iniciativas.length}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {iniciativas.map((iniciativa) => (
-                    <InitiativeCard
-                      key={iniciativa.id}
-                      iniciativa={iniciativa}
-                      onClick={() => setSelectedIniciativa(iniciativa)}
-                    />
-                  ))}
-                  {iniciativas.length === 0 && (
-                    <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                      Nenhuma iniciativa
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+          <TabsContent value="overview" className="mt-0">
+            <ProjectOverview
+              projeto={projeto}
+              onIniciativaClick={setSelectedIniciativa}
+            />
+          </TabsContent>
+
+          {sprintAtiva && (
+            <TabsContent value="sprint" className="mt-0">
+              <SprintView
+                projeto={projeto}
+                sprint={sprintAtiva}
+                onIniciativaClick={setSelectedIniciativa}
+              />
+            </TabsContent>
+          )}
+        </Tabs>
       </main>
 
       <InitiativeDetailsModal
