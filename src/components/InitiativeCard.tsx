@@ -23,7 +23,7 @@ export function InitiativeCard({ iniciativa, onClick }: InitiativeCardProps) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-start justify-between text-base">
           <span className="group-hover:text-primary transition-colors">
-            {iniciativa.nome}
+            {iniciativa.iniciativa_nome}
           </span>
           {totalItems > 0 && (
             <Badge variant="secondary" className="ml-2 shrink-0">
