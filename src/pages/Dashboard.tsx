@@ -21,6 +21,10 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Dashboard | CORE";
+  }, []);
+
+  useEffect(() => {
     async function loadDashboardData() {
       if (!user) return;
       setIsLoading(true);

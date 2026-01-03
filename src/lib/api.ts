@@ -1,4 +1,4 @@
-import { DiarioEntry, Iniciativa, LoginResponse, Paradigma, Projeto, ScoreData, SprintDashboardData, User } from "./types";
+import { DiarioEntry, Iniciativa, LoginResponse, Paradigma, Projeto, RankingItem, ScoreData, SprintDashboardData, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
@@ -106,6 +106,12 @@ export const api = {
 
   async getProjeto(id: string): Promise<Projeto> {
     return customFetch<Projeto>(`${API_BASE_URL}/projeto?id=${id}`, {
+      headers: getAuthHeaders(),
+    });
+  },
+
+  async getProjectRanking(id: string): Promise<RankingItem[]> {
+    return customFetch<RankingItem[]>(`${API_BASE_URL}/ranking?id=${id}`, {
       headers: getAuthHeaders(),
     });
   },

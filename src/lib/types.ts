@@ -13,6 +13,15 @@ export interface ScoreData {
   xp_para_proximo_nivel: string;
 }
 
+export interface RankingItem {
+  usuario_id: number;
+  nome_usuario: string;
+  xp_no_projeto: string;
+  total_interacoes: string;
+  ultima_interacao: string;
+  status_no_projeto: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -122,8 +131,37 @@ export interface SprintBlocker {
   data_reporte: string;
 }
 
+export interface SnapshotJSON {
+  data_fechamento: string;
+  resumo_numerico: {
+    blockers: string;
+    vitorias: string;
+    xp_total_gerado: string;
+  };
+  hall_vitorias_md: string;
+  lista_entregas_md: string;
+  mural_frustracoes: string;
+}
+
+export interface RelatorioIA {
+  sprintId: number;
+  userMessage: string;
+  snapshot_json: SnapshotJSON;
+  lista_entregas: string;
+  hall_das_vitorias: string;
+  timeline_destaques: string;
+  novo_estado_usuario: string;
+}
+
+export interface DadosFechamento {
+  conclusao_lider: string;
+  diario_bordo: string;
+  relatorio_ia: RelatorioIA;
+}
+
 export interface SprintDashboardData {
   sprint_id: number;
+  projeto_id: string;
   nome_sprint: string;
   objetivo_principal: string;
   status: string;
@@ -139,4 +177,6 @@ export interface SprintDashboardData {
   alertas_impedimentos: SprintBlocker[];
   grafico_atividade: SprintActivity[];
   iniciativas_da_sprint: Iniciativa[];
+  pagina_estrategica?: any;
+  dados_fechamento?: DadosFechamento;
 }

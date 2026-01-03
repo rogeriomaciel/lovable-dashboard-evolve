@@ -1,22 +1,24 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
-import { Projeto, Iniciativa } from "@/lib/types";
+import { Projeto, Iniciativa, RankingItem } from "@/lib/types";
 import { Header } from "@/components/Header";
 import { InitiativeDetailsModal } from "@/components/InitiativeDetailsModal";
 import { ProjectOverview } from "@/components/project/ProjectOverview";
 import { GamificationView } from "@/components/project/GamificationView";
+import { ProjectRankingView } from "@/components/project/ProjectRankingView";
 import { SprintView } from "@/components/project/SprintView";
 import { StrategicView } from "@/components/project/StrategicView";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, PartyPopper, LayoutGrid, PlayCircle, Target, Gamepad2 } from "lucide-react";
+import { ArrowLeft, PartyPopper, LayoutGrid, PlayCircle, Target, Gamepad2, Trophy } from "lucide-react";
 
 export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
+  const [ranking, setRanking] = useState<RankingItem[]>([]);
   const [selectedIniciativa, setSelectedIniciativa] = useState<Iniciativa | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
@@ -25,7 +27,13 @@ export default function ProjectDetails() {
   const loadProjeto = async () => {
     if (!id) return;
     try {
-      const data = await api.getProjeto(id);
+      // Carrega projeto e ranking em paralelo
+      const [data, rankingData] = await Promise.all([
+        api.getProjeto(id),
+        api.getProjectRanking(id).catch(() => []) // Falha silenciosa para o ranking não quebrar a página
+      ]);
+      
+      setRanking(rankingData);
 
       const rawData = Array.isArray(data) ? (data as any)[0] : data;
 
@@ -76,6 +84,14 @@ export default function ProjectDetails() {
   useEffect(() => {
     loadProjeto();
   }, [id]);
+
+  useEffect(() => {
+    if (projeto) {
+      document.title = `${projeto.nome_projeto} | CORE`;
+    } else {
+      document.title = "Carregando Projeto... | CORE";
+    }
+  }, [projeto]);
 
   if (isLoading) {
     return (
@@ -168,6 +184,10 @@ export default function ProjectDetails() {
               <Gamepad2 className="h-4 w-4" />
               Gamificação
             </TabsTrigger>
+            <TabsTrigger value="ranking" className="gap-2">
+              <Trophy className="h-4 w-4" />
+              Ranking
+            </TabsTrigger>
             <TabsTrigger value="strategy" className="gap-2">
               <Target className="h-4 w-4" />
               Estratégia
@@ -189,6 +209,10 @@ export default function ProjectDetails() {
 
           <TabsContent value="gamification" className="mt-0">
             <GamificationView data={(projeto as any).gamification_config} />
+          </TabsContent>
+
+          <TabsContent value="ranking" className="mt-0">
+            <ProjectRankingView ranking={ranking} />
           </TabsContent>
 
           <TabsContent value="strategy" className="mt-0">

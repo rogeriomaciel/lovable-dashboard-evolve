@@ -11,7 +11,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Calendar, Target, Clock, Activity, AlertTriangle, Lock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StrategicView } from "@/components/project/StrategicView";
+import { SprintClosureView } from "@/components/project/SprintClosureView";
+import { ArrowLeft, Calendar, Target, Clock, Activity, AlertTriangle, Lock, LayoutGrid, Flag } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -40,6 +43,14 @@ export default function SprintDashboard() {
     }
     loadSprint();
   }, [id]);
+
+  useEffect(() => {
+    if (data) {
+      document.title = `${data.nome_sprint} | CORE`;
+    } else {
+      document.title = "Carregando Sprint... | CORE";
+    }
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -80,24 +91,53 @@ export default function SprintDashboard() {
       <Header />
       <main className="container py-8 space-y-8">
         {/* Navegação */}
-        <Link to="/">
+        <Link to={`/projeto/${data.projeto_id}`}>
           <Button variant="ghost" size="sm" className="mb-2">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
         </Link>
 
-        {/* Header Tático */}
-        <Card className="border-l-4 border-l-primary">
-          <CardContent className="p-6">
-            <div className="grid gap-6 md:grid-cols-3 items-center">
-              {/* Esquerda: Info */}
-              <div className="md:col-span-2 space-y-1">
-                <h3>Sprint</h3>
-                <h2 className="text-2xl font-bold">{data.nome_sprint}</h2>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>
+        {!isSprintActive && (
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-4 text-muted-foreground">
+            <Lock className="h-5 w-5" />
+            <p className="text-sm font-medium">Sprint {data.status} — Modo de Consulta</p>
+          </div>
+        )}
+
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="dashboard" className="gap-2">
+              <LayoutGrid className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            {data.dados_fechamento && (
+              <TabsTrigger value="closure" className="gap-2">
+                <Flag className="h-4 w-4" />
+                Fechamento
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="strategy" className="gap-2">
+              <Target className="h-4 w-4" />
+              Estratégia do Projeto
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard" className={`space-y-8 ${!isSprintActive ? 'grayscale opacity-80' : ''}`}>
+            {/* Header Tático */}
+            <Card className={`border-l-4 ${isSprintActive ? 'border-l-primary' : 'border-l-muted'}`}>
+              <CardContent className="p-6">
+                <div className="grid gap-6 md:grid-cols-3 items-center">
+                  {/* Esquerda: Info */}
+                  <div className="md:col-span-2 space-y-1">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex   gap-2 text-primary font-semibold uppercase tracking-wide text-xs">Rodada</div>
+                      <h2 className="text-2xl font-bold">{data.nome_sprint} {!isSprintActive && <Badge variant="outline" className="text-base">{data.status}</Badge>}</h2>
+                      
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
                     {format(parseISO(data.data_inicio), "dd/MM", { locale: ptBR })} -{" "}
                     {format(parseISO(data.data_fim), "dd/MM", { locale: ptBR })}
                   </span>
@@ -226,6 +266,18 @@ export default function SprintDashboard() {
             title="Quadro da Sprint"
           />
         </div>
+          </TabsContent>
+
+          <TabsContent value="strategy">
+            <StrategicView data={data.pagina_estrategica} />
+          </TabsContent>
+
+          {data.dados_fechamento && (
+            <TabsContent value="closure">
+              <SprintClosureView data={data.dados_fechamento} />
+            </TabsContent>
+          )}
+        </Tabs>
       </main>
 
       <InitiativeDetailsModal
