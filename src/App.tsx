@@ -12,6 +12,7 @@ import Celebration from "./pages/Celebration";
 import NotFound from "./pages/NotFound";
 import LinkPhone from "./pages/LinkPhone";
 import ResetPassword from "./pages/ResetPassword";
+import SprintDashboard from "./pages/SprintDashboard";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/sprint/:id" element={<SprintDashboard />} />
             <Route
               path="/projeto/:id/celebracao"
               element={

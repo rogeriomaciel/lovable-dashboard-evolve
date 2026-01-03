@@ -4,6 +4,15 @@ export interface Paradigma {
   paradigma_detalhe: string;
 }
 
+export interface ScoreData {
+  usuario_id: number;
+  nome_usuario: string;
+  total_xp: string;
+  nivel_numerico: number;
+  titulo_atual: string;
+  xp_para_proximo_nivel: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -47,6 +56,9 @@ export interface Iniciativa {
   sprint_id?: string;
   nome_projeto?: string;
   status: "A Fazer" | "Em Andamento" | "Concluído" | "Bloqueado";
+  ultimo_update?: string;
+  responsavel_nome?: string;
+  responsavel_phone?: string;
 }
 
 export interface Sprint {
@@ -94,4 +106,37 @@ export interface DiarioEntry {
   texto: string;
   data: string;
   periodo: "dia" | "semana" | "mes" | "ano";
+}
+
+export interface SprintActivity {
+  data: string;
+  xp_gerado: number;
+  updates_count: number;
+}
+
+export interface SprintBlocker {
+  id: string; // iniciativa_id
+  iniciativa_nome: string;
+  texto_blocker: string;
+  responsavel: string;
+  data_reporte: string;
+}
+
+export interface SprintDashboardData {
+  sprint_id: number;
+  nome_sprint: string;
+  objetivo_principal: string;
+  status: string;
+  data_inicio: string;
+  data_fim: string;
+  hoje: string;
+  duracao_total_dias: number;
+  dias_restantes: number;
+  percentual_tempo_decorrido: string;
+  total_iniciativas: string;
+  iniciativas_concluidas: string;
+  progresso_geral_sprint: string;
+  alertas_impedimentos: SprintBlocker[];
+  grafico_atividade: SprintActivity[];
+  iniciativas_da_sprint: Iniciativa[];
 }

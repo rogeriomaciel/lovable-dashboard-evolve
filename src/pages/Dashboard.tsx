@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Projeto } from "@/lib/types";
+import { Projeto, Paradigma, ScoreData } from "@/lib/types";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Header } from "@/components/Header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,16 +16,42 @@ import { FolderOpen } from "lucide-react";
 export default function Dashboard() {
   const { user } = useAuth();
   const [projetos, setProjetos] = useState<Projeto[]>([]);
+  const [paradigmas, setParadigmas] = useState<Paradigma[]>([]);
+  const [score, setScore] = useState<ScoreData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadProjetos() {
+    async function loadDashboardData() {
+      if (!user) return;
+      setIsLoading(true);
       try {
-        const data = await api.getProjetos();
-        setProjetos(data);
+        // Usamos Promise.allSettled para garantir que, se uma API falhar, as outras ainda carreguem.
+        const results = await Promise.allSettled([
+          api.getProjetos(),
+          api.getParadigmas()
+        ]);
+
+
+
+        // Processa o resultado dos projetos
+        if (results[0].status === "fulfilled") {
+          setProjetos(results[0].value);
+        } else {
+          console.error("Falha ao carregar projetos:", results[0].reason);
+          toast({ title: "Erro ao carregar projetos", description: (results[0].reason as Error).message, variant: "destructive" });
+        }
+
+        // Processa o resultado dos paradigmas
+        if (results[1].status === "fulfilled") {
+          setParadigmas(results[1].value);
+        } else {
+          console.log("Falha ao carregar paradigmas:", results[1].reason);
+          toast({ title: "Erro ao carregar paradigmas", description: (results[1].reason as Error).message, variant: "destructive" });
+        }
+
       } catch (error: any) {
         toast({
-          title: "Erro ao carregar projetos",
+          title: "Erro inesperado ao carregar o painel",
           description: error.message,
           variant: "destructive",
         });
@@ -33,9 +59,8 @@ export default function Dashboard() {
         setIsLoading(false);
       }
     }
-
-    loadProjetos();
-  }, []);
+    loadDashboardData();
+  }, [user]);
 
   const userInitials = user?.name
     ? user.name
@@ -48,7 +73,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header score={score} />
       <main className="flex-1 p-4 md:p-6 bg-muted/40 overflow-auto">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header do usuário */}
@@ -71,7 +96,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Paradigmas do Usuário */}
-          <UserParadigms paradigmas={user?.paradigmas || []} />
+          <UserParadigms paradigmas={paradigmas} />
 
           {/* Grid principal: Projetos + Iniciativas */}
           <div className="grid gap-6 lg:grid-cols-3">

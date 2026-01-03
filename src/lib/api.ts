@@ -1,4 +1,4 @@
-import { DiarioEntry, Iniciativa, LoginResponse, Projeto, User } from "./types";
+import { DiarioEntry, Iniciativa, LoginResponse, Paradigma, Projeto, ScoreData, SprintDashboardData, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const API_LOGIN = import.meta.env.VITE_API_LOGIN || "http://localhost:8000/api/login";
@@ -71,26 +71,74 @@ export const api = {
   },
 
   async getIniciativasFoco(): Promise<Iniciativa[]> {
-    return customFetch<Iniciativa[]>(`${API_BASE_URL}/iniciativas/foco`, {
+    const response = await customFetch<any>(`${API_BASE_URL}/iniciativas`, {
       headers: getAuthHeaders(),
     });
+    
+    const data = Array.isArray(response) && response[0]?.iniciativas_em_andamento 
+      ? response[0].iniciativas_em_andamento 
+      : [];
+
+    return data.map((i: any) => ({
+      ...i,
+      id: String(i.id),
+      iniciativa_nome: i.nome,
+      nome_projeto: i.projeto_nome,
+    }));
+  },
+
+  async getParadigmas(): Promise<Paradigma[]> {
+    const response = await customFetch<Paradigma[]>(`${API_BASE_URL}/paradigmas`, {
+      headers: getAuthHeaders(),
+    });
+    // A API retorna [{ paradigmas: [...] }], então extraímos a lista interna
+    return response && response.paradigmas ? response.paradigmas : [];
+  },
+
+  async getScore(): Promise<ScoreData | null> { 
+    const response = await customFetch<ScoreData>(`${API_BASE_URL}/score`, {
+      headers: getAuthHeaders(),
+    });
+    // A API retorna um array, então pegamos o primeiro item
+    //return Array.isArray(response) && response.length > 0 ? response[0] : null;
+    return response ? response : null;
   },
 
   async getProjeto(id: string): Promise<Projeto> {
-    return customFetch<Projeto>(`${API_BASE_URL}/projetos/${id}`, {
+    return customFetch<Projeto>(`${API_BASE_URL}/projeto?id=${id}`, {
       headers: getAuthHeaders(),
     });
   },
 
-  async updateIniciativaChecklist(
-    iniciativaId: string,
-    checklistData: any
-  ): Promise<void> {
-    return customFetch<void>(`${API_BASE_URL}/iniciativas/${iniciativaId}/checklist`, {
-      method: "PUT",
+  async getSprintDashboard(id: string): Promise<SprintDashboardData> {
+    const response = await customFetch<any>(`${API_BASE_URL}/sprint?id=${id}`, {
       headers: getAuthHeaders(),
-      body: JSON.stringify({ checklist_data: checklistData }),
     });
+    
+    const data = Array.isArray(response) ? response[0] : response;
+
+    if (data && data.iniciativas_da_sprint) {
+      data.iniciativas_da_sprint = data.iniciativas_da_sprint.map((i: any) => {
+        let checklistItems = [];
+
+        if (Array.isArray(i.checklist)) {
+          checklistItems = i.checklist.map((item: any) => ({
+            id: item.id,
+            text: item.texto,
+            status: item.feito ? "completed" : "pending"
+          }));
+        } else if (i.checklist?.items) {
+          checklistItems = i.checklist.items;
+        }
+
+        return {
+          ...i,
+          iniciativa_nome: i.nome || i.iniciativa_nome,
+          checklist_data: { items: checklistItems }
+        };
+      });
+    }
+    return data;
   },
 
   async loginWithGoogle(googleToken: string): Promise<LoginResponse> {

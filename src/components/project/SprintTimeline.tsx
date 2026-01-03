@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Sprint } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -7,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, CheckCircle2, PlayCircle, ThumbsUp, AlertTriangle, Lightbulb } from "lucide-react";
+import { Calendar, CheckCircle2, PlayCircle, ThumbsUp, AlertTriangle, Lightbulb, Target } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -22,6 +23,7 @@ function SprintNode({ sprint, isActive }: { sprint: Sprint; isActive: boolean })
   return (
     <Tooltip>
       <TooltipTrigger asChild>
+        <Link to={`/sprint/${sprint.id}`}>
         <div
           className={`
             relative flex flex-col items-center cursor-pointer
@@ -69,6 +71,7 @@ function SprintNode({ sprint, isActive }: { sprint: Sprint; isActive: boolean })
             </Badge>
           )}
         </div>
+        </Link>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="max-w-xs">
         <div className="space-y-2">
@@ -77,6 +80,13 @@ function SprintNode({ sprint, isActive }: { sprint: Sprint; isActive: boolean })
             {format(startDate, "dd 'de' MMMM", { locale: ptBR })} a{" "}
             {format(endDate, "dd 'de' MMMM", { locale: ptBR })}
           </p>
+
+          {sprint.objetivo && (
+            <div className="border-t pt-2 mt-2 flex items-start gap-2">
+              <Target className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <p className="text-sm">{sprint.objetivo}</p>
+            </div>
+          )}
           
           {sprint.resumo_evolucao && (
             <div className="space-y-1.5 pt-2 border-t">

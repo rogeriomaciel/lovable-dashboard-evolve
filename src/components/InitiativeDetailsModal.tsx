@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,37 +8,64 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Iniciativa, ChecklistItem } from "@/lib/types";
-import { CheckCircle2, Circle, Save } from "lucide-react";
+import { Iniciativa } from "@/lib/types";
+import {
+  CheckCircle2,
+  Circle,
+  Target,
+  History,
+  MessageSquare,
+  ShieldAlert,
+  Lightbulb,
+  CheckSquare,
+  Rocket,
+  FlagOff,
+  Trophy,
+  Undo2,
+} from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
-import { api } from "@/lib/api";
-import { toast } from "@/hooks/use-toast";
+import { ScrollArea } from "./ui/scroll-area";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface InitiativeDetailsModalProps {
   iniciativa: Iniciativa | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: () => void;
 }
+
+const getUpdateIcon = (type: string) => {
+  switch (type) {
+    case "LOG":
+      return <MessageSquare className="h-4 w-4 text-muted-foreground" />;
+    case "BLOCKER":
+      return <ShieldAlert className="h-4 w-4 text-destructive" />;
+    case "INSIGHT":
+      return <Lightbulb className="h-4 w-4 text-blue-500" />;
+    case "CHECKLIST":
+      return <CheckSquare className="h-4 w-4 text-primary" />;
+    case "INICIO_FOCO":
+      return <Rocket className="h-4 w-4 text-green-500" />;
+    case "SOLTAR_FOCO":
+      return <FlagOff className="h-4 w-4 text-muted-foreground" />;
+    case "VITORIA":
+      return <Trophy className="h-4 w-4 text-yellow-500" />;
+    case "ABANDONO":
+      return <Undo2 className="h-4 w-4 text-orange-500" />;
+    default:
+      return <History className="h-4 w-4 text-muted-foreground" />;
+  }
+};
 
 export function InitiativeDetailsModal({
   iniciativa,
   open,
   onOpenChange,
-  onUpdate,
 }: InitiativeDetailsModalProps) {
-  const [items, setItems] = useState<ChecklistItem[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
-
-  useState(() => {
-    if (iniciativa?.checklist_data?.items) {
-      setItems(iniciativa.checklist_data.items);
-    }
-  });
-
   if (!iniciativa) return null;
 
-  const checklist = items.length > 0 ? items : iniciativa.checklist_data?.items || [];
+  const historico = (iniciativa as any).historico_updates || [];
+  const checklist = iniciativa.checklist_data?.items || [];
   const completedCount = checklist.filter((item) => item.status === "completed").length;
   const pendingCount = checklist.length - completedCount;
   const progress = checklist.length > 0 ? (completedCount / checklist.length) * 100 : 0;
@@ -49,46 +75,25 @@ export function InitiativeDetailsModal({
     { name: "Pendentes", value: pendingCount, color: "hsl(var(--muted))" },
   ];
 
-  const handleToggleItem = (itemId: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId
-          ? { ...item, status: item.status === "completed" ? "pending" : "completed" }
-          : item
-      )
-    );
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await api.updateIniciativaChecklist(iniciativa.id, { items });
-      toast({
-        title: "Checklist atualizado",
-        description: "As alterações foram salvas com sucesso.",
-      });
-      onUpdate();
-      onOpenChange(false);
-    } catch (error: any) {
-      toast({
-        title: "Erro ao salvar",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">{iniciativa.iniciativa_nome}</DialogTitle>
           <DialogDescription>
-            {iniciativa.descricao || "Gerencie o checklist desta iniciativa"}
+            {iniciativa.descricao || "Checklist desta iniciativa"}
           </DialogDescription>
         </DialogHeader>
+
+        {(iniciativa as any).proposito && (
+          <div className="rounded-lg bg-primary/5 border border-primary/10 p-4">
+            <h4 className="text-sm font-semibold text-primary mb-1 flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Propósito
+            </h4>
+            <p className="text-sm text-foreground">{(iniciativa as any).proposito}</p>
+          </div>
+        )}
 
         {checklist.length > 0 ? (
           <div className="space-y-6">
@@ -140,8 +145,8 @@ export function InitiativeDetailsModal({
                     <Checkbox
                       id={item.id}
                       checked={item.status === "completed"}
-                      onCheckedChange={() => handleToggleItem(item.id)}
                       className="mt-1"
+                      disabled
                     />
                     <label
                       htmlFor={item.id}
@@ -167,13 +172,34 @@ export function InitiativeDetailsModal({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            {historico.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Histórico de Atualizações</h3>
+                <ScrollArea className="h-[200px] rounded-md border p-3">
+                  <div className="space-y-4">
+                    {historico.map((update: any) => (
+                      <div key={update.id} className="flex items-start gap-3">
+                        <div className="mt-1">{getUpdateIcon(update.tipo)}</div>
+                        <div className="flex-1">
+                          <p className="text-sm text-foreground">{update.texto}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {update.usuario_nome} •{" "}
+                            {formatDistanceToNow(new Date(update.data), {
+                              addSuffix: true,
+                              locale: ptBR,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+
+            <div className="flex justify-end">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                <Save className="mr-2 h-4 w-4" />
-                {isSaving ? "Salvando..." : "Salvar Alterações"}
+                Fechar
               </Button>
             </div>
           </div>

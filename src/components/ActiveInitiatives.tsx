@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Iniciativa } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Target, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Target, ArrowRight, CheckCircle2, User } from "lucide-react";
 
 function IniciativaItem({ iniciativa }: { iniciativa: Iniciativa }) {
   const proximaTarefa = iniciativa.checklist_data?.items.find(
@@ -13,33 +14,51 @@ function IniciativaItem({ iniciativa }: { iniciativa: Iniciativa }) {
   );
 
   return (
-    <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50 hover:shadow-sm">
-      <div className="mt-0.5 shrink-0">
-        {proximaTarefa ? (
-          <Target className="h-4 w-4 text-primary" />
-        ) : (
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <Badge variant="secondary" className="mb-1.5 text-xs">
-          {iniciativa.nome_projeto}
-        </Badge>
-        <p className="font-medium text-sm text-foreground truncate">
-          {iniciativa.iniciativa_nome}
-        </p>
-        {proximaTarefa ? (
-          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-            <span className="font-medium">Próxima:</span> {proximaTarefa.text}
+    <Link to={`/projeto/${iniciativa.projeto_id}`} className="block">
+      <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50 hover:shadow-sm">
+        <div className="mt-0.5 shrink-0">
+          {proximaTarefa ? (
+            <Target className="h-4 w-4 text-primary" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="mb-1.5">
+            <Badge variant="secondary" className="text-xs">
+              {iniciativa.nome_projeto}
+            </Badge>
+          </div>
+          <p className="font-medium text-sm text-foreground truncate">
+            {iniciativa.iniciativa_nome}
           </p>
-        ) : (
-          <p className="mt-1 text-xs font-medium text-green-600">
-            ✓ Checklist concluído
-          </p>
-        )}
+          {proximaTarefa ? (
+            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+              <span className="font-medium">Próxima:</span> {proximaTarefa.text}
+            </p>
+          ) : iniciativa.ultimo_update ? (
+            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+              <span className="font-medium">Último Update:</span> {iniciativa.ultimo_update}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs font-medium text-green-600">
+              ✓ Checklist concluído
+            </p>
+          )}
+
+          {(iniciativa.responsavel_nome || iniciativa.responsavel_phone) && (
+            <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <User className="h-3 w-3" />
+              <span>
+                {iniciativa.responsavel_nome}
+                {iniciativa.responsavel_phone && ` • ${iniciativa.responsavel_phone}`}
+              </span>
+            </div>
+          )}
+        </div>
+        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
       </div>
-      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-    </div>
+    </Link>
   );
 }
 

@@ -1,6 +1,5 @@
 import { Paradigma } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Accordion,
   AccordionContent,
@@ -32,6 +31,13 @@ export function UserParadigms({ paradigmas }: UserParadigmsProps) {
     );
   }
 
+  const gridClass =
+    paradigmas.length === 1
+      ? "grid-cols-1"
+      : paradigmas.length === 2
+      ? "grid-cols-1 md:grid-cols-2"
+      : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -40,13 +46,12 @@ export function UserParadigms({ paradigmas }: UserParadigmsProps) {
           Meus Paradigmas
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-4 px-6 pb-4">
+      <CardContent>
+        <div className={`grid gap-4 ${gridClass}`}>
             {paradigmas.map((paradigma, index) => (
               <Card
                 key={index}
-                className="min-w-[320px] max-w-[320px] shrink-0 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
+                className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
               >
                 <Accordion type="single" collapsible>
                   <AccordionItem value={`paradigma-${index}`} className="border-none">
@@ -72,9 +77,7 @@ export function UserParadigms({ paradigmas }: UserParadigmsProps) {
                 </Accordion>
               </Card>
             ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );

@@ -10,12 +10,14 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ projeto }: ProjectCardProps) {
-  const sprintsConcluidas = projeto.sprints_concluidas || 0;
-  const iniciativasAtivas = projeto.iniciativas_ativas || 0;
-  const progressoSimulado = Math.min((sprintsConcluidas * 20) + 10, 90);
+  // Cast para any para garantir acesso às propriedades que podem vir como string ou novas
+  const p = projeto as any;
+  const sprintsConcluidas = Number(p.sprints_concluidas) || 0;
+  const iniciativasAtivas = Number(p.iniciativas_ativas) || 0;
+  const progresso = Number(p.percentual_conclusao_projeto) || 0;
 
   return (
-    <Link to={`/projeto/${projeto.id}`}>
+    <Link to={`/projeto/${p.projeto_id || projeto.id}`}>
       <Card className="group transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -25,7 +27,7 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
             <Target className="h-5 w-5 text-primary" />
           </CardTitle>
           <CardDescription className="line-clamp-2">
-            {projeto.descricao}
+            {projeto.descricao || p.proposito}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -42,9 +44,9 @@ export function ProjectCard({ projeto }: ProjectCardProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progresso Geral</span>
-              <span className="font-medium">{progressoSimulado}%</span>
+              <span className="font-medium">{Math.round(progresso)}%</span>
             </div>
-            <Progress value={progressoSimulado} className="h-2" />
+            <Progress value={progresso} className="h-2" />
           </div>
         </CardContent>
       </Card>

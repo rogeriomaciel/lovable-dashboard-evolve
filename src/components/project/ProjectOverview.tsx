@@ -2,7 +2,7 @@ import { Projeto, Iniciativa } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InitiativeKanban } from "./InitiativeKanban";
 import { SprintTimeline } from "./SprintTimeline";
-import { Info } from "lucide-react";
+import { Info, Target } from "lucide-react";
 
 interface ProjectOverviewProps {
   projeto: Projeto;
@@ -41,11 +41,25 @@ export function ProjectOverview({ projeto, onIniciativaClick }: ProjectOverviewP
               </p>
             </div>
           </div>
-          {projeto.descricao && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              {projeto.descricao}
-            </p>
-          )}
+          
+          <div className="mt-6 space-y-4">
+            {projeto.descricao && (
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">Descrição</h4>
+                <p className="text-sm text-foreground">{projeto.descricao}</p>
+              </div>
+            )}
+
+            {(projeto as any).proposito && (
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Propósito
+                </h4>
+                <p className="text-sm text-foreground">{(projeto as any).proposito}</p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

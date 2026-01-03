@@ -5,12 +5,14 @@ import { Projeto, Iniciativa } from "@/lib/types";
 import { Header } from "@/components/Header";
 import { InitiativeDetailsModal } from "@/components/InitiativeDetailsModal";
 import { ProjectOverview } from "@/components/project/ProjectOverview";
+import { GamificationView } from "@/components/project/GamificationView";
 import { SprintView } from "@/components/project/SprintView";
+import { StrategicView } from "@/components/project/StrategicView";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, PartyPopper, LayoutGrid, PlayCircle } from "lucide-react";
+import { ArrowLeft, PartyPopper, LayoutGrid, PlayCircle, Target, Gamepad2 } from "lucide-react";
 
 export default function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
@@ -18,12 +20,48 @@ export default function ProjectDetails() {
   const [selectedIniciativa, setSelectedIniciativa] = useState<Iniciativa | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+    
 
   const loadProjeto = async () => {
     if (!id) return;
     try {
       const data = await api.getProjeto(id);
-      setProjeto(data);
+
+      const rawData = Array.isArray(data) ? (data as any)[0] : data;
+
+      if (rawData) {
+        // Adapta a nova estrutura da API para a estrutura esperada pelo frontend
+        const transformedProjeto = {
+          ...rawData,
+          id: rawData.projeto_id || rawData.id, // Mapeia projeto_id para id
+          sprints: rawData.timeline_sprints || rawData.sprints || [], // Mapeia a nova timeline de sprints
+          sprints_concluidas: Number(rawData.sprints_concluidas) || 0,
+          iniciativas_ativas: Number(rawData.iniciativas_ativas) || 0,
+          iniciativas: (rawData.lista_iniciativas || rawData.iniciativas || []).map((i: any) => {
+            let checklistItems = [];
+
+            if (Array.isArray(i.checklist)) {
+              // Novo formato da API: Array direto com { texto, feito }
+              checklistItems = i.checklist.map((item: any) => ({
+                id: item.id,
+                text: item.texto,
+                status: item.feito ? "completed" : "pending"
+              }));
+            } else if (i.checklist?.items) {
+              checklistItems = i.checklist.items;
+            } else if (i.checklist_data?.items) {
+              checklistItems = i.checklist_data.items;
+            }
+
+            return {
+              ...i,
+              iniciativa_nome: i.nome || i.iniciativa_nome, // Garante que o nome apareça corretamente nos cards
+              checklist_data: { items: checklistItems }
+            };
+          }),
+        };
+        setProjeto(transformedProjeto as Projeto);
+      }
     } catch (error: any) {
       toast({
         title: "Erro ao carregar projeto",
@@ -42,7 +80,7 @@ export default function ProjectDetails() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header  />
         <main className="container py-8">
           <Skeleton className="mb-6 h-12 w-64" />
           <Skeleton className="mb-8 h-20 w-full" />
@@ -59,7 +97,7 @@ export default function ProjectDetails() {
   if (!projeto) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header  />
         <main className="container py-8">
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
@@ -102,8 +140,21 @@ export default function ProjectDetails() {
         </div>
 
         {/* Título do Projeto */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">{projeto.nome_projeto}</h1>
+        <div className="mb-8 space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold">{projeto.nome_projeto}</h1>
+            {projeto.descricao && <p className="text-lg text-muted-foreground mt-2">{projeto.descricao}</p>}
+          </div>
+
+          {(projeto as any).proposito && (
+            <div className="rounded-lg bg-primary/5 border border-primary/10 p-4">
+              <h3 className="text-sm font-semibold text-primary mb-1 flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Propósito Maior
+              </h3>
+              <p className="text-sm text-foreground">{(projeto as any).proposito}</p>
+            </div>
+          )}
         </div>
 
         {/* Tabs de Visualização */}
@@ -112,6 +163,14 @@ export default function ProjectDetails() {
             <TabsTrigger value="overview" className="gap-2">
               <LayoutGrid className="h-4 w-4" />
               Visão Geral
+            </TabsTrigger>
+            <TabsTrigger value="gamification" className="gap-2">
+              <Gamepad2 className="h-4 w-4" />
+              Gamificação
+            </TabsTrigger>
+            <TabsTrigger value="strategy" className="gap-2">
+              <Target className="h-4 w-4" />
+              Estratégia
             </TabsTrigger>
             {sprintAtiva && (
               <TabsTrigger value="sprint" className="gap-2">
@@ -126,6 +185,14 @@ export default function ProjectDetails() {
               projeto={projeto}
               onIniciativaClick={setSelectedIniciativa}
             />
+          </TabsContent>
+
+          <TabsContent value="gamification" className="mt-0">
+            <GamificationView data={(projeto as any).gamification_config} />
+          </TabsContent>
+
+          <TabsContent value="strategy" className="mt-0">
+            <StrategicView data={(projeto as any).pagina_estrategica} />
           </TabsContent>
 
           {sprintAtiva && (
@@ -144,7 +211,6 @@ export default function ProjectDetails() {
         iniciativa={selectedIniciativa}
         open={!!selectedIniciativa}
         onOpenChange={(open) => !open && setSelectedIniciativa(null)}
-        onUpdate={loadProjeto}
       />
     </div>
   );
