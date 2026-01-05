@@ -159,7 +159,7 @@ export function InitiativeDetailsModal({
                             : ""
                         }
                       >
-                        {item.text}
+                        {item.text.nome || item.text}
                       </span>
                     </label>
                     {item.status === "completed" ? (

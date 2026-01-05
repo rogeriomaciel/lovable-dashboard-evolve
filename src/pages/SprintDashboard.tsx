@@ -86,6 +86,27 @@ export default function SprintDashboard() {
     timerBarColor = "bg-destructive";
   }
 
+  // Sanitização para evitar erro de objeto como child no modal.
+  // O erro ocorre quando campos (incluindo aninhados como `checklist.texto`)
+  // vêm como objetos `{id, nome}` mas o modal espera uma string para renderizar.
+  const safeIniciativa = selectedIniciativa ? JSON.parse(JSON.stringify(selectedIniciativa)) : null;
+
+  if (safeIniciativa) {
+    Object.keys(safeIniciativa).forEach((key) => {
+      const val = (safeIniciativa as any)[key];
+      if (val && typeof val === 'object' && !Array.isArray(val) && val.hasOwnProperty('nome')) {
+        (safeIniciativa as any)[key] = val.nome;
+      }
+    });
+    if (safeIniciativa.checklist && Array.isArray(safeIniciativa.checklist)) {
+      safeIniciativa.checklist.forEach((item: any) => {
+        if (item.texto && typeof item.texto === 'object' && item.texto.hasOwnProperty('nome')) {
+          item.texto = item.texto.nome;
+        }
+      });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -281,7 +302,7 @@ export default function SprintDashboard() {
       </main>
 
       <InitiativeDetailsModal
-        iniciativa={selectedIniciativa}
+        iniciativa={safeIniciativa}
         open={!!selectedIniciativa}
         onOpenChange={(open) => !open && setSelectedIniciativa(null)}
       />
