@@ -77,6 +77,7 @@ export interface Sprint {
   data_fim: string;
   status: "ativa" | "concluida";
   projeto_id: string;
+  objetivo?: string;
   resumo_evolucao?: {
     positivos: string[];
     desafios: string[];

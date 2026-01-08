@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Projeto, Paradigma, ScoreData } from "@/lib/types";
+import { Projeto, Paradigma } from "@/lib/types";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { UserParadigms } from "@/components/UserParadigms";
@@ -17,7 +18,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [paradigmas, setParadigmas] = useState<Paradigma[]>([]);
-  const [score, setScore] = useState<ScoreData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -76,8 +76,8 @@ export default function Dashboard() {
     : "U";
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header score={score} />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
       <main className="flex-1 p-4 md:p-6 bg-muted/40 overflow-auto">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header do usuário */}
@@ -144,6 +144,7 @@ export default function Dashboard() {
           <DiaryPreview />
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

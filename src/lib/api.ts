@@ -91,8 +91,23 @@ export const api = {
     const response = await customFetch<Paradigma[]>(`${API_BASE_URL}/paradigmas`, {
       headers: getAuthHeaders(),
     });
-    // A API retorna [{ paradigmas: [...] }], então extraímos a lista interna
-    return response && response.paradigmas ? response.paradigmas : [];
+    // A API pode retornar formatos diferentes, tratamos ambos os casos
+    if (Array.isArray(response)) {
+      // Se já é um array de Paradigma, retorna direto
+      if (response.length > 0 && 'novo_paradigma' in response[0]) {
+        return response;
+      }
+      // Se é [{ paradigmas: [...] }], extrai
+      const first = response[0] as any;
+      if (first && first.paradigmas) {
+        return first.paradigmas;
+      }
+    }
+    // Se é { paradigmas: [...] }
+    if (response && (response as any).paradigmas) {
+      return (response as any).paradigmas;
+    }
+    return [];
   },
 
   async getScore(): Promise<ScoreData | null> { 
