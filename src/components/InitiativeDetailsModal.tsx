@@ -159,7 +159,7 @@ export function InitiativeDetailsModal({
                             : ""
                         }
                       >
-                        {item.text.nome || item.text}
+                        {typeof item.text === 'object' && item.text !== null ? (item.text as any).nome : item.text}
                       </span>
                     </label>
                     {item.status === "completed" ? (

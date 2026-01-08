@@ -178,7 +178,7 @@ export default function SprintDashboard() {
                     <span>Tempo: {Math.round(timeProgress)}%</span>
                     <span>Iniciativas: {Math.round(taskProgress)}%</span>
                   </div>
-                  <Progress value={timeProgress} className="h-2" indicatorClassName={timerBarColor} />
+                  <Progress value={timeProgress} className={`h-2 [&>div]:${timerBarColor}`} />
                 </div>
               </div>
             </div>
