@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Projeto, Iniciativa, RankingItem } from "@/lib/types";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { InitiativeDetailsModal } from "@/components/InitiativeDetailsModal";
 import { ProjectOverview } from "@/components/project/ProjectOverview";
 import { GamificationView } from "@/components/project/GamificationView";
@@ -236,6 +237,8 @@ export default function ProjectDetails() {
         open={!!selectedIniciativa}
         onOpenChange={(open) => !open && setSelectedIniciativa(null)}
       />
+
+      <Footer />
     </div>
   );
 }
