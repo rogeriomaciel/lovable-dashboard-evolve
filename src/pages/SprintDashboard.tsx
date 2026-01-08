@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { SprintDashboardData, Iniciativa } from "@/lib/types";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { InitiativeKanban } from "@/components/project/InitiativeKanban";
 import { InitiativeDetailsModal } from "@/components/InitiativeDetailsModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -306,6 +307,8 @@ export default function SprintDashboard() {
         open={!!selectedIniciativa}
         onOpenChange={(open) => !open && setSelectedIniciativa(null)}
       />
+
+      <Footer />
     </div>
   );
 }
