@@ -2,43 +2,25 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { DiarioEntry } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/hooks/use-toast";
-import { BookOpen } from "lucide-react";
-
-type Periodo = "dia" | "semana" | "mes" | "ano";
+import { BookOpen, Calendar } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export function DiaryPreview() {
-  const [entries, setEntries] = useState<Record<Periodo, DiarioEntry | null>>({
-    dia: null,
-    semana: null,
-    mes: null,
-    ano: null,
-  });
-  const [activePeriodo, setActivePeriodo] = useState<Periodo>("dia");
+  const [entries, setEntries] = useState<DiarioEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchDiario() {
       try {
         const data = await api.getDiario();
-        const byPeriodo: Record<Periodo, DiarioEntry | null> = {
-          dia: null,
-          semana: null,
-          mes: null,
-          ano: null,
-        };
-        
-        data.forEach((entry) => {
-          if (!byPeriodo[entry.periodo]) {
-            byPeriodo[entry.periodo] = entry;
-          }
-        });
-        
-        setEntries(byPeriodo);
+        // Ordena por data_referencia decrescente (mais recente primeiro)
+        const sorted = data.sort((a, b) => 
+          new Date(b.data_referencia).getTime() - new Date(a.data_referencia).getTime()
+        );
+        setEntries(sorted);
       } catch (error: any) {
-        // API pode não estar pronta ainda, apenas log silencioso
         console.log("Diário não disponível:", error.message);
       } finally {
         setIsLoading(false);
@@ -47,14 +29,28 @@ export function DiaryPreview() {
     fetchDiario();
   }, []);
 
-  const periodoLabels: Record<Periodo, string> = {
-    dia: "Hoje",
-    semana: "Semana",
-    mes: "Mês",
-    ano: "Ano",
+  const formatPeriodo = (entry: DiarioEntry) => {
+    try {
+      const inicio = parseISO(entry.periodo_inicio);
+      const fim = parseISO(entry.periodo_fim);
+      const inicioFormatted = format(inicio, "dd MMM", { locale: ptBR });
+      const fimFormatted = format(fim, "dd MMM yyyy", { locale: ptBR });
+      return `${inicioFormatted} - ${fimFormatted}`;
+    } catch {
+      return "";
+    }
   };
 
-  const currentEntry = entries[activePeriodo];
+  const formatDataReferencia = (dateStr: string) => {
+    try {
+      return format(parseISO(dateStr), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Pega a entrada mais recente para exibir
+  const latestEntry = entries[0];
 
   return (
     <Card>
@@ -65,40 +61,34 @@ export function DiaryPreview() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={activePeriodo} onValueChange={(v) => setActivePeriodo(v as Periodo)}>
-          <TabsList className="mb-4">
-            {(Object.keys(periodoLabels) as Periodo[]).map((periodo) => (
-              <TabsTrigger key={periodo} value={periodo}>
-                {periodoLabels[periodo]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
-          {isLoading ? (
-            <Skeleton className="h-24 w-full" />
-          ) : (
-            (Object.keys(periodoLabels) as Periodo[]).map((periodo) => (
-              <TabsContent key={periodo} value={periodo} className="mt-0">
-                {entries[periodo] ? (
-                  <div className="rounded-lg bg-muted/50 p-4">
-                    <p className="text-sm leading-relaxed text-foreground">
-                      {entries[periodo]?.texto}
-                    </p>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {entries[periodo]?.data}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-dashed p-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Nenhuma entrada para este período.
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-            ))
-          )}
-        </Tabs>
+        {isLoading ? (
+          <Skeleton className="h-32 w-full" />
+        ) : latestEntry ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{formatDataReferencia(latestEntry.data_referencia)}</span>
+              <span className="text-muted-foreground/50">•</span>
+              <span>{formatPeriodo(latestEntry)}</span>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-4 max-h-64 overflow-y-auto">
+              <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">
+                {latestEntry.conteudo}
+              </p>
+            </div>
+            {entries.length > 1 && (
+              <p className="text-xs text-muted-foreground text-center">
+                +{entries.length - 1} {entries.length - 1 === 1 ? "entrada anterior" : "entradas anteriores"}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Nenhuma entrada no diário ainda.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
