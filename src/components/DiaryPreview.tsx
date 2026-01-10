@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BookOpen, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 type PeriodType = "dia" | "semana" | "mes" | "ano";
@@ -36,28 +36,42 @@ export function DiaryPreview() {
     fetchDiario();
   }, []);
 
-  // Filtra entradas pelo período selecionado
+  // Calcula a duração do período em dias
+  const getDurationInDays = (inicio: string, fim: string): number => {
+    try {
+      const startDate = parseISO(inicio);
+      const endDate = parseISO(fim);
+      return differenceInDays(endDate, startDate);
+    } catch {
+      return 0;
+    }
+  };
+
+  // Filtra entradas pela duração do período
   const getFilteredEntries = (period: PeriodType): DiarioEntry[] => {
     return entries.filter(entry => {
-      const origem = entry.origem_registro?.toLowerCase() || "";
+      const days = getDurationInDays(entry.periodo_inicio, entry.periodo_fim);
       switch (period) {
         case "dia":
-          return origem.includes("dia") || origem.includes("daily");
+          return days <= 1;
         case "semana":
-          return origem.includes("semana") || origem.includes("week") || origem === "chat";
+          return days > 1 && days <= 14;
         case "mes":
-          return origem.includes("mes") || origem.includes("month");
+          return days > 14 && days <= 45;
         case "ano":
-          return origem.includes("ano") || origem.includes("year");
+          return days > 45;
         default:
           return true;
       }
     });
   };
 
-  // Se não houver filtro específico, mostra todas as entradas na aba selecionada
-  const filteredEntries = getFilteredEntries(selectedPeriod);
-  const displayEntries = filteredEntries.length > 0 ? filteredEntries : entries;
+  // Conta entradas por período para exibir nas abas
+  const getEntriesCount = (period: PeriodType): number => {
+    return getFilteredEntries(period).length;
+  };
+
+  const displayEntries = getFilteredEntries(selectedPeriod);
   const currentEntry = displayEntries[currentIndex];
 
   const formatPeriodo = (entry: DiarioEntry) => {
@@ -119,11 +133,19 @@ export function DiaryPreview() {
           className="flex flex-col flex-1"
         >
           <TabsList className="grid w-full grid-cols-4 mb-3">
-            {(Object.keys(periodLabels) as PeriodType[]).map((period) => (
-              <TabsTrigger key={period} value={period} className="text-xs">
-                {periodLabels[period]}
-              </TabsTrigger>
-            ))}
+            {(Object.keys(periodLabels) as PeriodType[]).map((period) => {
+              const count = getEntriesCount(period);
+              return (
+                <TabsTrigger key={period} value={period} className="text-xs gap-1">
+                  {periodLabels[period]}
+                  {count > 0 && (
+                    <span className="bg-primary/20 text-primary text-[10px] px-1.5 rounded-full">
+                      {count}
+                    </span>
+                  )}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           {isLoading ? (
