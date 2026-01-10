@@ -112,10 +112,16 @@ export interface Projeto {
 }
 
 export interface DiarioEntry {
-  id: string;
-  texto: string;
-  data: string;
-  periodo: "dia" | "semana" | "mes" | "ano";
+  id: number;
+  usuario_id: number;
+  projeto_id: number | null;
+  conteudo: string;
+  data_referencia: string;
+  periodo_inicio: string;
+  periodo_fim: string;
+  origem_registro: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SprintActivity {

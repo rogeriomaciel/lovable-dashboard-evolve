@@ -201,9 +201,8 @@ export const api = {
     );
   },
 
-  async getDiario(periodo?: string): Promise<DiarioEntry[]> {
-    const query = periodo ? `?periodo=${periodo}` : "";
-    return customFetch<DiarioEntry[]>(`${API_BASE_URL}/diario${query}`, {
+  async getDiario(): Promise<DiarioEntry[]> {
+    return customFetch<DiarioEntry[]>(`${API_BASE_URL}/diario`, {
       headers: getAuthHeaders(),
     });
   },
