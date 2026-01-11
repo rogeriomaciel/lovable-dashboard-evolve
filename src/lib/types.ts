@@ -114,7 +114,6 @@ export interface Projeto {
 export interface DiarioEntry {
   id: number;
   usuario_id: number;
-  projeto_id: number | null;
   conteudo: string;
   data_referencia: string;
   periodo_inicio: string;
