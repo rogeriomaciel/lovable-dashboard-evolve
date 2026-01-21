@@ -75,7 +75,7 @@ export default function LinkPhone() {
                 maxLength={15}
               />
               <p className="text-xs text-muted-foreground">
-                Este telefone será vinculado à sua conta Google
+                Este telefone deve ser o mesmo que foi vinculado à sua conta CORE
               </p>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading || telefone.length < 14}>
