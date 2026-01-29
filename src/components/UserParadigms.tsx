@@ -40,6 +40,7 @@ export function UserParadigms({ paradigmas }: UserParadigmsProps) {
 
   return (
     <Card>
+      {Array.isArray(paradigmas) ? <>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Sparkles className="h-5 w-5 text-primary" />
@@ -49,6 +50,7 @@ export function UserParadigms({ paradigmas }: UserParadigmsProps) {
       <CardContent>
         <div className={`grid gap-4 ${gridClass}`}>
             {paradigmas.map((paradigma, index) => (
+              paradigma.novo_paradigma ?
               <Card
                 key={index}
                 className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
@@ -75,10 +77,11 @@ export function UserParadigms({ paradigmas }: UserParadigmsProps) {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-              </Card>
-            ))}
+              </Card> : <></>
+            ))
+          } 
         </div>
-      </CardContent>
+      </CardContent></>: <></>}
     </Card>
   );
 }

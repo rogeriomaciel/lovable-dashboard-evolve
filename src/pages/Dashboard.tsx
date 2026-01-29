@@ -105,6 +105,8 @@ export default function Dashboard() {
           {/* Grid principal: Projetos + Iniciativas */}
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Projetos (2/3 da largura) */}
+            {projetos.length > 0 ? projetos[0].id ? 
+            <>
             <div className="lg:col-span-2 space-y-4">
               <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
                 <FolderOpen className="h-5 w-5 text-primary" />
@@ -128,16 +130,19 @@ export default function Dashboard() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
                   {projetos.map((projeto) => (
-                    <ProjectCard key={projeto.id} projeto={projeto} />
+                    projeto.id ? <ProjectCard key={projeto.id} projeto={projeto} /> : <></>
                   ))}
                 </div>
               )}
             </div>
+            
 
             {/* Iniciativas em Andamento (1/3 da largura) */}
             <div className="lg:col-span-1">
               <ActiveInitiatives />
             </div>
+            </>
+            : <></>: <></>}
           </div>
 
           {/* Diário */}
